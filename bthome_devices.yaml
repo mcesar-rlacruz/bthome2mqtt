@@ -1,0 +1,169 @@
+# YAML format, DO NOT USE TABS, BUT SPACES!! Also, ensure this file is encoded
+#   as UTF-8
+
+# Can put (line) comments where you want, starting each comment with a #.
+#
+# This file describes each BTHome v2 device to listen to and also the MQTT
+#   brokers to where to publish their measurements. The data serialization
+#   format used in this file is YAML, see https://en.wikipedia.org/wiki/YAML. 
+#
+# The program is able to (passively) listen and decode these BTHome v2
+#   advertisements and, then, report the measured data to MQTT brokers. 
+#   Authentication and encryption for these communications are supported.
+#
+# Each BTHome v2 device is identified by its MAC address, and the fields
+#   describing each device are:
+#       *   key:            mandatory for BTHome v2 devices encrypting their
+#                               advertisements. It is a 128 bit hex number.
+#       *   deduplicate:    a boolean (YAML booleans are true/yes/on and
+#                               false/no/off) stating if repeated packets from
+#                               the same device should be filtered or not. Some
+#                               devices (e.g. a button reporting its "hold"
+#                               event) may need not deduplication. Defaults to
+#                               "on".
+#       *   brokers:        an array of MQTT brokers where to publish
+#                               measurements to. Will be described later.
+#                           
+#   For example:
+#
+# # my bthome device
+# 11-22-33-44-55-66:                                    # device MAC address, case insensitive, can
+#                                                           # use periods, colons, dashes, 
+#                                                           # underscores, and spaces (use "" around
+#                                                           # MAC in this last case)
+#     key:            0123456789abcdef0123456789ABCDEF  # decryption key, case insensitive
+#     deduplicate:    off                               # do not deduplicate repeated advertisements
+#                                                           # from this device
+#     brokers:                                          # required, to be described next
+#
+# Field "brokers" is an array describing all MQTT brokers to where to publish
+#    to advertisements from each device. Each broker sub-fields are:
+#       *   hostname:   the hostname of the broker (required).
+#       *   port:       the port where the broker listens. Defaults to 8883.
+#       *   user:       the user name, in case the broker needs authentication.
+#       *   password:   the password, in case the broker needs authentication.
+#       *   encrypt:    boolean (defaults to yes), set to use TLS.
+#       *   insecure:   boolean (defaults to no), set in order to not check
+#                           certificate hostname. Only used with encrypted
+#                           clients. Useful when accessing brokers inside a LAN
+#                           thru a 192.168.x.y address (or 127.0.0.1)
+#       *   topics:     an array of MQTT topics where to publish the
+#                           measurements. Required.
+#
+# Continuing with the previous example:
+#
+# # my bthome device
+# 11-22-33-44-55-66:
+#     key:              0123456789abcdef0123456789ABCDEF
+#     deduplicate:      off
+#     brokers:
+#     -     hostname:   127.0.0.1
+#           user:       my_user_name
+#           password:   my_secret_password
+#           insecure:   yes
+#           topics:
+#           -   bthome/exterior/temp
+#           -   nodered/in
+#     -     hostname:   my.mqtt.broker.xyz
+#           port:       1883
+#           user:       my_other_user_name
+#           password:   my_other_secret_password
+#           encrypt:    no
+#           topics:
+#           -   sensors/temp/exterior
+#
+#   will publish measurements from this device to 2 MQTT brokers:
+#       # one at address 127.0.0.1, on port 8883, with the provided
+#           authentication (user and password), using encryption, but not
+#           checking the broker certificate hostname, and into 2 topics:
+#           "bthome/exterior/temp" and "nodered/in"
+#       # other at address my.mqtt.broker.xyz, on port 1883, with the provided
+#           authentication (user and password), not using encryption and into
+#           topic "sensors/temp/exterior"
+#
+# A "promiscuous" mode is supported. This mode is enabled defining a BTHome
+#       device with field MAC address equal to "promiscuous". In this mode all
+#       incoming BTHome advertisements coming from unlisted MAC addresses
+#       are processed according to that "promiscuous" device AND the real MAC
+#       address of the device is appended to the topics. Thus, defining device:
+#
+# promiscuous:
+#     key:              FEDCBA9876543210fedcba9876543210
+#     brokers:
+#     -     hostname:   127.0.0.1
+#           user:       another_more_user
+#           password:   another_more_password
+#           insecure:   yes
+#           topics:     
+#           -   nodered/promiscuous
+#
+#   will publish all advertisements from BTHome devices whose MAC is not listed
+#   to broker at address 127.0.0.1, port 8883, with the provided credentials, 
+#   using insecure encryption, into topic  "nodered/promiscuous/<MAC>", where
+#   <MAC> is the MAC address (uppercase, without any separators) of such BTHome
+#   devices.
+#
+# Finally, the format of this file, YAML, allows the use of "anchors" (&) and
+#   "aliases" (*) that allow one to save some typing in case of repeated (even
+#   with little variations) fields. Suppose, for example, that want to publish,
+#   for a given device, the same information to two slightly different MQTT
+#   brokers, then:
+#
+# # my bthome device
+# 11-22-33-44-55-66:
+#     key:              0123456789abcdef0123456789ABCDEF
+#     brokers:
+#     -     &mqtt_garden
+#           hostname:   127.0.0.1
+#           user:       my_user_name
+#           password:   my_secret_password
+#           insecure:   yes
+#           topics:
+#           -   bthome/exterior/temp
+#     -     <<: *mqtt_garden
+#           hostname:   192.168.0.101
+#           topics:
+#           -   nodered/in
+#
+#   will publish to 2 brokers, the description of the second one differing from
+#   that of the 1st only in the hostname and topic.
+#
+# That's all, now put below the configuration for each of the desired BTHome
+#   devices.
+
+# thermo 7
+00-11-22-33-44-55:
+    key:            0123456789ABCDEF0123456789abcdef
+    brokers:
+    -   &broker_local
+        hostname:   127.0.0.1
+        port:       1883
+        user:       my_username
+        password:   my_password
+        encrypt:    no
+        topics:
+        -   nodered/in/thermo_7
+        -   sensor/exterior/thermo/n7
+    -   hostname:   my.mqtt.broker.xyz
+        user:       my_other_username
+        password:   my_other_password
+        insecure:   yes
+        topics:
+        -   logger/thermo_7
+
+# button 0
+66-77-88-99-AA-BB:
+    key:            fedcba9876543210FEDCBA9876543210
+    deduplicate:    off
+    brokers:
+    -   <<: *broker_local
+        topics:
+        -   nodered/in/button_0
+
+# promiscuous
+promiscuous:
+    key:            00112233445566778899AABBCCDDEEFF
+    brokers:
+    -   <<: *broker_local
+        topics:
+        -   nodered/in/promiscuous
