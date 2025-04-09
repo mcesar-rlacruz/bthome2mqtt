@@ -170,7 +170,7 @@ When run as a service, its log is managed by the `journald` service, and can be 
 
 ## MQTT payload format
 
-Each advertisement from a BTHome v2 device is sent to MQTT brokers as a single string containing a JSON object literal, for example: from an hypothetical BTHome v2 device capable of measuring UV index, provided with some buttons, some dimmers and a window sensor, string `'{"battery": [80.0, "%"], "UV index": [6.8, null], "text": ["Hello, World!", null], "button_3": ["press", null], "dimmer_2", ["rotate_right", 5], "window": [true, null], "RSSI": [-73.0, "dBm"]}'`, represents JSON object:
+Each advertisement from a BTHome v2 device is sent to MQTT brokers as a single string containing a JSON object literal, for example: from an hypothetical BTHome v2 device capable of measuring UV index, provided with some buttons, some dimmers and a window sensor, string `'{"battery": [80.0, "%"], "UV index": [6.8, null], "text": ["Hello, World!", null], "button_3": ["press", null], "dimmer_2": ["rotate_right", 5], "window": [true, null], "RSSI": [-73.0, "dBm"]}'`, represents JSON object:
 
 ```json
 {
