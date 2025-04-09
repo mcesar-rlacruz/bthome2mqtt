@@ -178,7 +178,7 @@ Each advertisement from a BTHome v2 device is sent to MQTT brokers as a single s
     "UV index": [6.8, null],
     "text": ["Hello, World!", null],
     "button_3": ["press", null],
-    "dimmer_2", ["rotate_right", 5],
+    "dimmer_2": ["rotate_right", 5],
     "window": [true, null],
     "RSSI": [-73.0, "dBm"]
 }
