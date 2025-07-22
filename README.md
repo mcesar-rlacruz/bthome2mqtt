@@ -184,13 +184,13 @@ Each advertisement from a BTHome v2 device is sent to MQTT brokers as a single s
 }
 ```
 
-The `name` of each `name:value` pair corresponds to a ` property` (or `device type` for event devices —only `button` and `dimmer` currently—) as described in the [BTHome v2 format]([Reference – BTHome](https://bthome.io/format/)) specification. Each `value` is a two element array there are five variants of:
+The `name` of each `name:value` pair corresponds to a `property` (or `device type` for event devices —only `button` and `dimmer` currently—) as described in the [BTHome v2 format]([Reference – BTHome](https://bthome.io/format/)) specification. Each `value` is a two element array there are five variants of:
 
 1. `[float_number, string]`: these are the measured value and the measurement unit (`battery` and `RSSI` in the example above).
 2. `[float_number, null]`: as previous, but there is no measurement unit (`UV index` above).
 3. `[string, null]`: for:
    * `firmware version`, `text` (above) and `raw` properties;
-   * event sensors _without_ event property (currently only `button`), where the string is the `event type`. Note that `None` events types are not published to MQTT. See `button_3` in the example.
+   * event sensors _without_ event property (currently only `button`), where the string is the `event type`. Note that `None` event types are not published to MQTT. See `button_3` in the example.
 4. `[string, integer_number]`: for event sensors _with_ event property (currently only `dimmer`), where the string is the `event type` and the integer number is the `event property` (`dimmer_2` above).
 5. `[boolean, none]`: for binary sensors (`window`, which is open, in the example).
 
